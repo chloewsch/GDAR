@@ -296,6 +296,25 @@ perc_loglog_plot <- function(random_site_output, variable, zvar){
     
 }
 
+cvplot <- function(cvdf, colo, xaxislab=TRUE){
+  if(xaxislab==TRUE){
+    histo<-ggplot() +
+      geom_histogram(data = cvdf, aes(x = cv*100), fill = colo, alpha = 0.7, bins = 20) +
+      labs(y = 'frequency', x = 'CV of prediction error (%)') +
+      scale_x_continuous(limits=c(0, 1.4*100)) +
+      theme_minimal(base_size = 11) +
+      theme(text=element_text(family='Roboto Medium'))
+  } else
+  {
+    histo<- ggplot() +
+      geom_histogram(data = cvdf, aes(x = cv*100), fill = colo, alpha = 0.7, bins = 20) +
+      scale_x_continuous(limits=c(0, 1.4*100)) +
+      labs(y = 'frequency', x = '') +
+      theme_minimal(base_size = 11) +
+      theme(text=element_text(family='Roboto Medium'))}
+  return(histo)
+}
+
 # Bounding box to polygon -----
 makepolygon <- function(bbox, spp){ # turn a bounding box into a polygon
   bbox_2_df <- data.frame(binomial = spp,

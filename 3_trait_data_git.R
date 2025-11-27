@@ -16,6 +16,8 @@ library(ggrepel)
 library(viridis)
 library(patchwork)
 
+load('GDAR_env_figs.Rdata')
+
 # 1. Compile traits ------
 ## Mass -----
 data("pantheria")
@@ -25,7 +27,6 @@ traits <- pantheria %>%
           mutate(Genus_species = paste(Genus, Species, sep = '_'))
 
 # Mammal species names in our data
-zfst1 <- readRDS('zfst1_df.rds')
 mammals <- zfst1 %>% 
   filter(class == 'mammal')
 
@@ -54,7 +55,7 @@ massg <- traits %>%
 massg$AdultBodyMass_g[which(is.na(massg$AdultBodyMass_g))] <- c(7.5, 9)
 
 ## Range area --------
-## IUCN global terrestrial mammal ranges
+## IUCN global terrestrial mammal ranges: https://www.iucnredlist.org/resources/spatial-data-download
 ## METADATA: 
 # Presence: 1 = Extant; 2 = Probably extant; 3 = Possibly extant; 4 = Possibly extinct; 5 = Extinct; 6 = Uncertain
 # Origin: 1 = Native; 2 = Reintroduced; 3 = Introduced; 4 = Vagrant; 5 = Uncertain; 6 = Assisted colonization

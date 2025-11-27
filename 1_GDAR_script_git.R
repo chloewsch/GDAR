@@ -10,46 +10,28 @@ library(extrafont)
 library(patchwork)
 source('functions_git.R')
 
+# Load already compiled GDAR data:
+load('GDAR_env_figs.Rdata')
+
 # 1. Genetic data -------------
-meta <- read.csv('gdar_metadata.csv', h=T) %>% 
+meta <- meta %>% 
   drop_na(lon, lat)
-ogwd <- getwd()
+#ogwd <- getwd()
+#
+#
+### Read in genotypes ------
+## Set wd to folder with files
+#str <- 'str'
+#setwd(str)  
+#
+#file_list<- as.list(list.files())
+#
+#geno_list <- lapply(file_list, read_genot)
+#
+#setwd(ogwd)
 
-
-## Read in genotypes ------
-# Set wd to folder with files
-str <- 'str'
-setwd(str)  
-
-file_list<- as.list(list.files())
-
-geno_list <- lapply(file_list, read_genot)
-
-setwd(ogwd)
-
-## Data summary: count species and datasets -----
-genopops <- unlist(lapply(geno_list, function(x) unique(pop(x))))
-
-popfilt <- meta %>% 
-  filter(pop %in% c(genopops))
-
-# Number of datasets
-length(unique(popfilt$data_doi))
-
-# Number of species
-length(unique(popfilt$species))
-
-# Median number of individuals and sites in each dataset
-pf <- popfilt %>% 
-  group_by(data_doi) %>% 
-  summarise(total_inds = sum(num_individuals),
-            total_sites = n())
-
-median(pf$total_inds)
-range(pf$total_inds)
-
-median(pf$total_sites)
-range(pf$total_sites)
+## Load raw genotype data and metadata:
+#load('genotypes_files_FS.rds')
 
 ## Estimate global FST and mean Hs-----
 fst <- Map(function(geno, file){

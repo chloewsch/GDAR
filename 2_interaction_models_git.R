@@ -95,6 +95,6 @@ int_ac <- ggplot(eedf_ac,
 ## Fig. 3 ------
 intplot <- int_ac + int_ar + int_gd + plot_layout(guides = 'collect')
 
-zplotl <- plot_common(legend = T)
+zplotl <- plot_common(legend = T) # z.df from 1_GDAR_script_git.R
 
 Fig3 <- zplotl/intplot

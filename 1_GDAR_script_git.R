@@ -10,12 +10,8 @@ library(extrafont)
 library(patchwork)
 source('functions_git.R')
 
-# Load already compiled GDAR data:
-load('GDAR_env_figs.Rdata')
-
 # 1. Genetic data -------------
-meta <- meta %>% 
-  drop_na(lon, lat)
+
 #ogwd <- getwd()
 #
 #
@@ -34,55 +30,60 @@ meta <- meta %>%
 #load('genotypes_files_FS.rds')
 
 ## Estimate global FST and mean Hs-----
-fst <- Map(function(geno, file){
-  spmeta <- meta %>% 
-    dplyr::filter(pop %in% pop(geno))
-  splitty <- seppop(geno)
-  popsinmetadata <- repool(splitty[spmeta$pop])
-  print(file)
-  bs <- basic.stats(popsinmetadata)
-  fstdf <- data.frame(filename = file,
-                      fst = bs$overall['Fst'],
-                      hs = bs$overall['Hs'],
-                      ht = bs$overall['Ht'])
-  rownames(fstdf) <- NULL
-  return(fstdf)}, 
-  geno = geno_list, file = unlist(file_list))
-
-fstdf <- do.call('rbind', fst)
+#fst <- Map(function(geno, file){
+#  spmeta <- meta %>% 
+#    dplyr::filter(pop %in% pop(geno))
+#  splitty <- seppop(geno)
+#  popsinmetadata <- repool(splitty[spmeta$pop])
+#  print(file)
+#  bs <- basic.stats(popsinmetadata)
+#  fstdf <- data.frame(filename = file,
+#                      fst = bs$overall['Fst'],
+#                      hs = bs$overall['Hs'],
+#                      ht = bs$overall['Ht'])
+#  rownames(fstdf) <- NULL
+#  return(fstdf)}, 
+#  geno = geno_list, file = unlist(file_list))
+#
+#fstdf <- do.call('rbind', fst)
 
 
 # 2. GDARs -----
 ## Nested area sampling --------
-mollweide <- 'ESRI:54009'
-empty_df <- data.frame(allele_count = NA,
-                       allelic_richness = NA,
-                       He = NA,
-                       individuals = NA,
-                       num_sites = NA,
-                       area_m2 = NA)
-
-area_dfl <- list()
-for(i in 1:length(geno_list)){
-  rads <- get_radii(geno_list[[i]], meta, c(0.1, 0.25, 0.5, 0.75, 0.9, 0.99), mollweide)
-  if(sum(rads) != 0){
-    try({area_samples <- ctr_nested_site_samp(microsat = geno_list[[i]], 
-                                              radius = rads, 
-                                              data = meta, eecrs = mollweide)[[1]]
-    
-    
-    area_dfl[[i]] <- area_samples
-    })
-  } else{
-    area_dfl[[i]] <- empty_df
-  }
-  print(i)
-}
-
+#mollweide <- 'ESRI:54009'
+#empty_df <- data.frame(allele_count = NA,
+#                       allelic_richness = NA,
+#                       He = NA,
+#                       individuals = NA,
+#                       num_sites = NA,
+#                       area_m2 = NA)
+#
+#area_dfl <- list()
+#for(i in 1:length(geno_list)){
+#  rads <- get_radii(geno_list[[i]], meta, c(0.1, 0.25, 0.5, 0.75, 0.9, 0.99), mollweide)
+#  if(sum(rads) != 0){
+#    try({area_samples <- ctr_nested_site_samp(microsat = geno_list[[i]], 
+#                                              radius = rads, 
+#                                              data = meta, eecrs = mollweide)[[1]]
+#    
+#    
+#    area_dfl[[i]] <- area_samples
+#    })
+#  } else{
+#    area_dfl[[i]] <- empty_df
+#  }
+#  print(i)
+#}
+#
 # save file
 #saveRDS(area_dfl, 'area_dfl.rds')
 
+# Load already compiled GDAR data:
+load('GDAR_env_figs.Rdata')
+
 # attach global FST
+file_list <- sort(unique(meta$filename))
+
 area_dffi <- Map(function(x, y){
   if(is.null(x)){
     x <- empty_df
@@ -176,6 +177,10 @@ z.df %>%
   summarise(mean_z = mean(z),
             sd_z =sd(z))
 
+r2df <- zfst1 %>% 
+  select(species, class, r2_AC, r2_AR, r2_GD) %>% 
+  pivot_longer(c(r2_AC, r2_AR, r2_GD), names_to = 'variable',
+               values_to = 'r2')
 r2df %>% 
   group_by(variable) %>% 
   summarise(mean_r2 = mean(r2),
@@ -183,10 +188,26 @@ r2df %>%
 # 3. Plots -------
 
 ## Fig 1 example species -----
+z.attach1 <- lapply(z.attach, function(x){
+  
+  areass <- unique(x$log_area)
+  area_perc <- c(0.1, 0.25, 0.5, 0.75, 0.9, 0.99)
+  x <- x %>% 
+    mutate(perc_area = case_when(log_area == areass[1] ~ area_perc[1],
+                                 log_area == areass[2] ~ area_perc[2],
+                                 log_area == areass[3] ~ area_perc[3],
+                                 log_area == areass[4] ~ area_perc[4],
+                                 log_area == areass[5] ~ area_perc[5],
+                                 log_area == areass[6] ~ area_perc[6]))
+}
+)
+alldata <- do.call('rbind', z.attach1)
+
 m_luci <- alldata %>% 
   filter(filename == 'Johnson_Myotis_lucifugus.gen')
 h_platy <- alldata %>% 
   filter(filename=='Rovito_Hydromantes_platycephalus.gen')
+
 Fig1.twosp<- ggplot() +
   geom_jitter(data = m_luci, aes(y = log_allele_count, x = log_area), color = '#229BA6', alpha = 0.5) +
   geom_smooth(data = m_luci, aes(y = log_allele_count, x = log_area), method = 'lm', color = '#229BA6', fill = '#229BA6') +
@@ -227,24 +248,7 @@ zgd_class <- ggplot(z.df %>% filter(genetic_metric=='gene diversity'), aes(y = z
 z_by_class <- zac_class + zar_class + zgd_class
 
 ### top:  log GD vs log area ------
-z.attach1 <- lapply(z.attach, function(x){
-  
-  areass <- unique(x$log_area)
-  area_perc <- c(0.1, 0.25, 0.5, 0.75, 0.9, 0.99)
-  x <- x %>% 
-    mutate(perc_area = case_when(log_area == areass[1] ~ area_perc[1],
-                                 log_area == areass[2] ~ area_perc[2],
-                                 log_area == areass[3] ~ area_perc[3],
-                                 log_area == areass[4] ~ area_perc[4],
-                                 log_area == areass[5] ~ area_perc[5],
-                                 log_area == areass[6] ~ area_perc[6]))
-}
-)
-
 percac_plots <- lapply(z.attach1, perc_loglog_plot, 'log_allele_count', 'zAC')
-
-
-alldata <- do.call('rbind', z.attach1)
 
 ## overall effect
 modac <- lmer(log_allele_count ~ log_area + (log_area|filename), data=alldata)
@@ -290,10 +294,6 @@ Fig2 <- linee/z_by_class +  plot_annotation(tag_levels = 'a')
 
 
 ## Fig S1: Plot R2 vs. fst -------- 
-r2df <- zfst1 %>% 
-  select(species, class, r2_AC, r2_AR, r2_GD) %>% 
-  pivot_longer(c(r2_AC, r2_AR, r2_GD), names_to = 'variable',
-               values_to = 'r2')
 r2df$genetic_metric <- as.factor(r2df$variable)
 levels(r2df$genetic_metric) <- c('allele count', 'allelic richness', 'gene diversity')
 
@@ -317,48 +317,48 @@ llgdgd_plots <- lapply(z.attach, loglog_plot, 'log_gene_diversity', 'zGD')
 
 ## Fig. S5 -------
 # Number of loci & alleles
-nallo_df <- data.frame(filename = unlist(file_list),
-                       n_loci = unlist(lapply(geno_list, nLoc)),
-                       n_alleles = unlist(lapply(geno_list, function(b) sum(b@loc.n.all))))
-
-zfst2 <- merge(zfst1, nallo_df, by = 'filename', all=FALSE)
-
-p1<-ggplot(data=zfst2, aes(y=r2_AC, x = n_alleles)) +
-  geom_point() +
-  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
-  labs(title = "", y = expression(R^2), x = '# alleles') +
-  theme_classic()
-
-p2<-ggplot(data=zfst2, aes(y=r2_AR, x = n_alleles)) +
-  geom_point() +
-  geom_smooth(method='lm') +
-  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
-  labs(title = "", y = expression(R^2), x = '# alleles') +
-  theme_classic()
-
-p3<-ggplot(data=zfst2, aes(y=r2_GD, x = n_alleles)) +
-  geom_point() +
-  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
-  labs(title = "", y = expression(R^2), x = '# alleles') +
-  theme_classic()
-
-p4<-ggplot(data=zfst2, aes(y=r2_AC, x = n_loci)) +
-  geom_point() +
-  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
-  labs(title = "Allele count", y = expression(R^2), x = '# loci') +
-  theme_classic()
-
-p5<-ggplot(data=zfst2, aes(y=r2_AR, x = n_loci)) +
-  geom_point() +
-  geom_smooth(method='lm') +
-  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
-  labs(title = "Allelic richness", y = expression(R^2), x = '# loci') +
-  theme_classic()
-
-p6<-ggplot(data=zfst2, aes(y=r2_GD, x = n_loci)) +
-  geom_point() +
-  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
-  labs(title = "Gene diversity", y = expression(R^2), x = '# loci') +
-  theme_classic()
-
-FigS5 <- (p4/p5/p6) | (p1/p2/p3)
+#nallo_df <- data.frame(filename = unlist(file_list),
+#                       n_loci = unlist(lapply(geno_list, nLoc)),
+#                       n_alleles = unlist(lapply(geno_list, function(b) sum(b@loc.n.all))))
+#
+#zfst2 <- merge(zfst1, nallo_df, by = 'filename', all=FALSE)
+#
+#p1<-ggplot(data=zfst2, aes(y=r2_AC, x = n_alleles)) +
+#  geom_point() +
+#  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
+#  labs(title = "", y = expression(R^2), x = '# alleles') +
+#  theme_classic()
+#
+#p2<-ggplot(data=zfst2, aes(y=r2_AR, x = n_alleles)) +
+#  geom_point() +
+#  geom_smooth(method='lm') +
+#  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
+#  labs(title = "", y = expression(R^2), x = '# alleles') +
+#  theme_classic()
+#
+#p3<-ggplot(data=zfst2, aes(y=r2_GD, x = n_alleles)) +
+#  geom_point() +
+#  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
+#  labs(title = "", y = expression(R^2), x = '# alleles') +
+#  theme_classic()
+#
+#p4<-ggplot(data=zfst2, aes(y=r2_AC, x = n_loci)) +
+#  geom_point() +
+#  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
+#  labs(title = "Allele count", y = expression(R^2), x = '# loci') +
+#  theme_classic()
+#
+#p5<-ggplot(data=zfst2, aes(y=r2_AR, x = n_loci)) +
+#  geom_point() +
+#  geom_smooth(method='lm') +
+#  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
+#  labs(title = "Allelic richness", y = expression(R^2), x = '# loci') +
+#  theme_classic()
+#
+#p6<-ggplot(data=zfst2, aes(y=r2_GD, x = n_loci)) +
+#  geom_point() +
+#  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
+#  labs(title = "Gene diversity", y = expression(R^2), x = '# loci') +
+#  theme_classic()
+#
+#FigS5 <- (p4/p5/p6) | (p1/p2/p3)

@@ -7,9 +7,10 @@ library(ggplot2)
 library(extrafont)
 library(patchwork)
 library(viridis)
+source('functions_git.R')
 
 # 1. Data ----
-zfst <- readRDS('zfst_long_se.rds') # from GDAR_script
+zfst <- readRDS('zfst_long_se.rds') # generated from GDAR_script
 
 # 2. Analysis -----
 ## Gene diversity -----
@@ -95,6 +96,6 @@ int_ac <- ggplot(eedf_ac,
 ## Fig. 3 ------
 intplot <- int_ac + int_ar + int_gd + plot_layout(guides = 'collect')
 
-zplotl <- plot_common(legend = T) # z.df from 1_GDAR_script_git.R
+zplotl <- plot_common(legend = T) # requires z.df from 1_GDAR_script_git.R
 
 Fig3 <- zplotl/intplot

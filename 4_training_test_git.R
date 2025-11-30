@@ -71,9 +71,9 @@ model_predictionszgd <- Map(function(modellist, testlist) predict(modellist, tes
 
 error_rateszgd <- Map(function(predictions, testdat) RMSE(predictions, testdat$zGD)/mean(testdat$zGD), 
                     predictions = model_predictionszgd, testdat = test.data)
-
-hist(unlist(error_rateszgd)) 
-abline(v = mean(unlist(error_rateszgd)), col = 'red', lty='dashed', lwd = 2)
+# Plot
+#hist(unlist(error_rateszgd)) 
+#abline(v = mean(unlist(error_rateszgd)), col = 'red', lty='dashed', lwd = 2)
 
 # Mean CV
 mean(unlist(error_rateszgd))
@@ -89,9 +89,9 @@ model_predictionszar <- Map(function(modellist, testlist) predict(modellist, tes
 
 error_rateszar <- Map(function(predictions, testdat) RMSE(predictions, testdat$zAR)/mean(testdat$zAR), 
                     predictions = model_predictionszar, testdat = test.data)
-
-hist(unlist(error_rateszar)) 
-abline(v = mean(unlist(error_rateszar)), col = 'red', lty='dashed', lwd = 2)
+# Plot
+#hist(unlist(error_rateszar)) 
+#abline(v = mean(unlist(error_rateszar)), col = 'red', lty='dashed', lwd = 2)
 
 # Mean CV
 mean(unlist(error_rateszar))
@@ -107,9 +107,9 @@ model_predictionszac <- Map(function(modellist, testlist) predict(modellist, tes
 
 error_rateszac <- Map(function(predictions, testdat) RMSE(predictions, testdat$zAC)/mean(testdat$zAC), 
                     predictions = model_predictionszac, testdat = test.data)
-
-hist(unlist(error_rateszac)) 
-abline(v = mean(unlist(error_rateszac)), col = 'red', lty='dashed', lwd = 2)
+# Plot
+#hist(unlist(error_rateszac)) 
+#abline(v = mean(unlist(error_rateszac)), col = 'red', lty='dashed', lwd = 2)
 
 # Mean CV
 mean(unlist(error_rateszac))

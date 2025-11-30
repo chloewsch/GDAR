@@ -10,11 +10,15 @@ library(taxize)
 library(tidyr)
 library(dplyr)
 
+# spatial
+library(terra)
+
 # Plots
 library(ggplot2)
 library(ggrepel)
 library(viridis)
 library(patchwork)
+source('functions_git.R')
 
 load('GDAR_env_figs.Rdata')
 
@@ -79,7 +83,7 @@ mammal_sp[NAsp]
 mam$species <- gsub('Martes_pennanti', 'Pekania_pennanti', mam$species)
 
 ## Check again for NAs:
-#which(is.na(match(gdata_sp, mam$species)))
+#which(is.na(match(mammal_sp, mam$species)))
 
 species <- match(mammal_sp, mam$species)
 
@@ -103,7 +107,7 @@ sp_areas <- ranges %>%
   select(-area_km) %>%
   select(species, range_area_km2) %>% 
   distinct()
-sp_areas
+
 
 ## Home ranges -----
 homerange <- GetHomeRangeData()
@@ -115,6 +119,10 @@ homerange <- homerange %>%
 
 homerange$species <- gsub(' ', '_', homerange$Species)
 
+# Check Pekania pennanti
+homerange[which(homerange$species=='Martes_pennanti'),]
+homerange$species[which(homerange$species=='Martes_pennanti')] <- 'Pekania_pennanti'
+
 homerange$genus <- unlist(lapply(strsplit(homerange$Species, ' '), function(x) x[1]))
 
 # Find missing species
@@ -122,9 +130,6 @@ homerange1 <- homerange %>%
                 filter(species %in% mammal_sp) %>% 
                 select(genus, species, mean_HR)
 missing <- setdiff(mammal_sp, homerange1$species)
-
-# Pekania pennanti
-homerange$species[which(homerange$species=='Martes_pennanti')] <- 'Pekania_pennanti'
 
 homerange[which(homerange$genus=='Myotis'), ]
 homerange[which(homerange$genus=='Tamiasciurus'), ]
@@ -229,7 +234,7 @@ for(i in 1:length(fns)){
 gdar_area <- data.frame(filename = fns,
                        area_km2 = unlist(bbox_areas))
 
-mam_dat <- merge(mam_dat, gdar_area, by = 'filename')
+mam_dat <- merge(mam_zfst, gdar_area, by = 'filename')
 
 # Fix number of sites and individuals
 sites_indivs <- meta %>% 
@@ -317,13 +322,14 @@ traits <- pantheria %>%
   select(Genus, Species, AdultBodyMass_g) %>% 
   mutate(Genus_species = paste(Genus, Species, sep = '_'))
 
+# Update Pekania
+traits$Genus_species[which(traits$Genus_species=='Martes_pennanti')] <- 'Pekania_pennanti'
+mpg.f$species[which(mpg.f$species=='Martes_pennanti')] <- 'Pekania_pennanti'
 mpg_sp <- unique(mpg.f$species)
 
 # Find missing species or mismatched names 
 setdiff(mpg_sp, unique(traits$Genus_species))
 
-# Update fisher scientific name
-mpg.f$species[which(mpg.f$species=='Martes_pennanti')] <- 'Pekania_pennanti'
 traits$Genus_species[which(traits$Genus_species=='Spermophilus_brunneus')] <- 'Urocitellus_brunneus'
 
 # Add mass information
@@ -345,26 +351,21 @@ mpg_massg$AdultBodyMass_g[which(is.na(mpg_massg$AdultBodyMass_g))] <- 90.5
 
 
 ### Range area -------
-mam <- read_sf('TERRESTRIAL_MAMMALS.shp')
-
-## Create column to match with genetic data
-# (Replace spaces with underscores)
-mam$species <- gsub(' ', '_', mam$binomial)
 
 # Match species across datasets:
+mpg_sp <- unique(mpg.f$species) # Update P. pennanti in species list
 species <- match(mpg_sp, mam$species)
 
 # Find species that didn't match range data:
 NAsp <- which(is.na(species))
-mpg_sp[NAsp] ## It's Pekania pennanti
+mpg_sp[NAsp]
 
-## Replace Martes pennanti with Pekania pennanti in both datasets:
-mam$species <- gsub('Martes_pennanti', 'Pekania_pennanti', mam$species)
+## Edit other names:
 mam$species <- gsub('Xerospermophilus_mohavensis', 'Spermophilus_mohavensis', mam$species)
 mam$species <- gsub('Neotamias_ruficaudus', 'Tamias_ruficaudus', mam$species)
 
 ## Check again for NAs:
-#which(is.na(match(gdata_sp, mam$species)))
+#which(is.na(match(mpg_sp, mam$species)))
 
 species <- match(mpg_sp, mam$species)
 
@@ -396,10 +397,7 @@ mpg_sp_areas
 mpghomerange1 <- homerange %>% 
   filter(species %in% mpg_sp) %>% 
   select(genus, species, mean_HR)
-missing <- setdiff(mpg_sp, mpghomerange1$species)
-
-# Pekania pennanti
-homerange$species[which(homerange$species=='Martes_pennanti')] <- 'Pekania_pennanti'
+(missing <- setdiff(mpg_sp, mpghomerange1$species))
 
 homerange[which(homerange$genus=='Cynomys'), ]
 homerange[which(homerange$genus=='Lama'), ] # None

@@ -9,7 +9,7 @@ File descriptions: <br>
 - <b>3_trait_data_git.R:</b> compile species trait data <br>
 - <b>4_training_test_git.R:</b> test the predictability of FST and scaling exponents z using species traits <br>
 - <b>functions_git.R:</b> functions needed to run analyses in other scripts <br>
-- <b> GDAR_env_figs.Rdata:</b> R environment object including data needed to run scripts <br>
+- <b> GDAR_env_figs.Rdata:</b> R environment object including data needed to run scripts. NOTE: coordinates in metadata have been truncated to 2 decimal places, and have been shifted (preserving relative distances) for some sensitive species. This does not affect GDAR analyses however these coordinates should not be used if precise locations are needed <br>
 - <b> zfst_long_se.rds:</b> a saved R object produced in script 1 <br>
 - <b> mammal_traits.csv:</b> trait data for species included in this analysis <br>
    Column descriptions:<br>

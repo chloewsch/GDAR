@@ -1,3 +1,8 @@
+# Package install ------
+# Install traitdata and HomeRange packages from Github:
+# remotes::install_github("RS-eco/traitdata", build_vignettes = T, force=T)
+# remotes::install_github("SHoeks/HomeRange", subdir='pkg')
+
 # Libraries ------
 # Traits
 library(traitdata)
@@ -12,6 +17,7 @@ library(dplyr)
 
 # spatial
 library(terra)
+library(sf)
 
 # Plots
 library(ggplot2)
@@ -59,18 +65,22 @@ massg <- traits %>%
 massg$AdultBodyMass_g[which(is.na(massg$AdultBodyMass_g))] <- c(7.5, 9)
 
 ## Range area --------
-## IUCN global terrestrial mammal ranges: https://www.iucnredlist.org/resources/spatial-data-download
+## IUCN global mammal ranges: https://www.iucnredlist.org/resources/spatial-data-download
 ## METADATA: 
 # Presence: 1 = Extant; 2 = Probably extant; 3 = Possibly extant; 4 = Possibly extinct; 5 = Extinct; 6 = Uncertain
 # Origin: 1 = Native; 2 = Reintroduced; 3 = Introduced; 4 = Vagrant; 5 = Uncertain; 6 = Assisted colonization
 # Seasonal: 1 = Resident; 2 = Breeding Season; 3 = Non-breeding season; 4 = Passage; 5 = Uncertain
-mam <- read_sf('TERRESTRIAL_MAMMALS.shp')
+mam1 <- read_sf('MAMMALS_PART1.shp')
+mam2 <- read_sf('MAMMALS_PART2.shp')
+mam <- rbind(mam1, mam2)
+rm(mam1, mam2)
 
 ## Filter range data
 
 ## Create column to match with genetic data
 # (Replace spaces with underscores)
-mam$species <- gsub(' ', '_', mam$binomial)
+# mam$species <- gsub(' ', '_', mam$binomial) # species names in older versions of data
+mam$species <- gsub(' ', '_', mam$sci_name)
 
 # Match species across datasets:
 species <- match(mammal_sp, mam$species)

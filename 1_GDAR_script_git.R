@@ -317,48 +317,48 @@ llgdgd_plots <- lapply(z.attach, loglog_plot, 'log_gene_diversity', 'zGD')
 
 ## Fig. S5 -------
 # Number of loci & alleles
-#nallo_df <- data.frame(filename = unlist(file_list),
-#                       n_loci = unlist(lapply(geno_list, nLoc)),
-#                       n_alleles = unlist(lapply(geno_list, function(b) sum(b@loc.n.all))))
-#
-#zfst2 <- merge(zfst1, nallo_df, by = 'filename', all=FALSE)
-#
-#p1<-ggplot(data=zfst2, aes(y=r2_AC, x = n_alleles)) +
-#  geom_point() +
-#  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
-#  labs(title = "", y = expression(R^2), x = '# alleles') +
-#  theme_classic()
-#
-#p2<-ggplot(data=zfst2, aes(y=r2_AR, x = n_alleles)) +
-#  geom_point() +
-#  geom_smooth(method='lm') +
-#  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
-#  labs(title = "", y = expression(R^2), x = '# alleles') +
-#  theme_classic()
-#
-#p3<-ggplot(data=zfst2, aes(y=r2_GD, x = n_alleles)) +
-#  geom_point() +
-#  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
-#  labs(title = "", y = expression(R^2), x = '# alleles') +
-#  theme_classic()
-#
-#p4<-ggplot(data=zfst2, aes(y=r2_AC, x = n_loci)) +
-#  geom_point() +
-#  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
-#  labs(title = "Allele count", y = expression(R^2), x = '# loci') +
-#  theme_classic()
-#
-#p5<-ggplot(data=zfst2, aes(y=r2_AR, x = n_loci)) +
-#  geom_point() +
-#  geom_smooth(method='lm') +
-#  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
-#  labs(title = "Allelic richness", y = expression(R^2), x = '# loci') +
-#  theme_classic()
-#
-#p6<-ggplot(data=zfst2, aes(y=r2_GD, x = n_loci)) +
-#  geom_point() +
-#  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
-#  labs(title = "Gene diversity", y = expression(R^2), x = '# loci') +
-#  theme_classic()
-#
-#FigS5 <- (p4/p5/p6) | (p1/p2/p3)
+nallo_df <- data.frame(filename = unlist(file_list),
+                       n_loci = unlist(lapply(geno_list, nLoc)),
+                       n_alleles = unlist(lapply(geno_list, function(b) sum(b@loc.n.all))))
+
+zfst2 <- merge(zfst1, nallo_df, by = 'filename', all=FALSE)
+
+p1<-ggplot(data=zfst2, aes(y=r2_AC, x = n_alleles)) +
+  geom_point() +
+  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
+  labs(title = "", y = expression(R^2), x = '# alleles') +
+  theme_classic()
+
+p2<-ggplot(data=zfst2, aes(y=r2_AR, x = n_alleles)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
+  labs(title = "", y = expression(R^2), x = '# alleles') +
+  theme_classic()
+
+p3<-ggplot(data=zfst2, aes(y=r2_GD, x = n_alleles)) +
+  geom_point() +
+  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
+  labs(title = "", y = expression(R^2), x = '# alleles') +
+  theme_classic()
+
+p4<-ggplot(data=zfst2, aes(y=r2_AC, x = n_loci)) +
+  geom_point() +
+  geom_smooth(method='lm', color = '#012030', fill = '#012030', alpha=0.25) +
+  labs(title = "Allele count", y = expression(R^2), x = '# loci') +
+  theme_classic()
+
+p5<-ggplot(data=zfst2, aes(y=r2_AR, x = n_loci)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  geom_smooth(method='lm', color = '#13678A', fill = '#13678A', alpha=0.25) +
+  labs(title = "Allelic richness", y = expression(R^2), x = '# loci') +
+  theme_classic()
+
+p6<-ggplot(data=zfst2, aes(y=r2_GD, x = n_loci)) +
+  geom_point() +
+  geom_smooth(method='lm', color = '#45C4B0', fill = '#45C4B0', alpha=0.25) +
+  labs(title = "Gene diversity", y = expression(R^2), x = '# loci') +
+  theme_classic()
+
+FigS5 <- (p4/p5/p6) | (p1/p2/p3)
